@@ -44,7 +44,7 @@ paths:
     get:
       summary: Get all authors
       operationId: getAuthors # operationId - a unique identifier for the operation, which can be used for code generation and client libraries.
-      tags: #group and organize API endpoints for documentation and Swagger UI
+      tags: #tags - group and organize API endpoints for documentation and Swagger UI
       - Authors 
       responses:
         '200':
