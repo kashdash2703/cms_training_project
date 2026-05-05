@@ -15,10 +15,8 @@ components:
       properties:
        first_name:
         type: string
-        description: The first name of the author
        last_name:
         type: string
-        description: The last name of the author
        email:
         type: string
         format: email
@@ -37,7 +35,6 @@ components:
           type: string
          text:
           type: string
-          description: The main content of the article
          author:
            $ref: '#/components/schemas/Author'
         required: [headline, text, author]
@@ -45,10 +42,10 @@ components:
 paths:
   /authors:
     get:
-      summary: Get a list of all authors
-      operationId: getAuthors # operationId - a unique identifier for the operation, which can be used for code generation and client libraries. It helps to distinguish between different operations in the API and allows developers to easily reference and call specific operations when interacting with the API.
-      tags: 
-      - Authors
+      summary: Get all authors
+      operationId: getAuthors # operationId - a unique identifier for the operation, which can be used for code generation and client libraries.
+      tags: #group and organize API endpoints for documentation and Swagger UI
+      - Authors 
       responses:
         '200':
           description: A list of authors
@@ -69,14 +66,12 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Author'
+                type: array
+                items:
+                  $ref: '#/components/schemas/Author'
         responses:
           '201':
             description: Author created successfully
-            content:
-              application/json:
-                schema:
-                  $ref: '#/components/schemas/Author'
           '400':
             description: Invalid input  
 
@@ -160,7 +155,7 @@ paths:
   /articles:
     get:
       summary: Get a list of all articles
-      operationId: getArticles # operationId - a unique identifier for the operation, which can be used for code generation and client libraries. It helps to distinguish between different operations in the API and allows developers to easily reference and call specific operations when interacting with the API.
+      operationId: getArticles 
       tags: 
       - Articles
       responses:
