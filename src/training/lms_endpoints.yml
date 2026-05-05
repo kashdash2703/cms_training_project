@@ -1,0 +1,262 @@
+openapi: 3.1.0
+info:
+  title: Library Management System API
+  version: 1.0.0
+  description: |
+    A simple API for managing a library's book collections, borrowing and returning records.
+
+servers:
+  - url:  https://api.librarysystem.com
+    description: Production environment
+  - url: https://dev.api.librarysystem.com
+    description: Development environment
+
+#Components - reusable definitions in API specification
+components:
+#Security schemes - define authentication methods 
+#(How clients must authentication to use an API)
+  securitySchemes:
+    BearerAuth:
+      type: http
+      # Bearer authentication scheme is used for token-based authentication, where the client sends a token (like JWT) in the Authorization header of the request.
+      scheme: bearer
+      # JSON Web Token (JWT) is a compact, URL-safe means of representing claims to be transferred between two parties. It is commonly used for authentication and authorization in web applications.
+      bearerFormat: JWT
+
+  schemas:
+  # Similar to interfaces - defines structure of data objects 
+    Book:
+      type: object
+      required: [id, isbn, title, author, genre, total_copies, available_copies]
+      properties:
+        id:
+          type: string
+          # uuid (Universally Unique Identifier) is a standardized 128-bit format for unique identifiers, often represented as a string of hexadecimal digits separated by hyphens. It is commonly used to uniquely identify resources in distributed systems.
+          format: uuid
+        isbn:  
+          type: string 
+        title:
+          type: string
+        author:
+          type: string
+        genre:
+          type: string
+        total_copies:
+          type: integer
+          minimum: 1
+        available_copies:
+          type: integer
+          minimum: 0
+        created_at:
+          type: string
+          format: date-time
+
+    BorrowRecord:
+      type: object
+      required: [id, member_id, book_id, borrowed_at, due_date, status]
+      properties:
+        id:
+          type: string
+          format: uuid
+        member_id:
+          type: string
+          format: uuid
+        book_id:
+          type: string
+          format: uuid
+        borrowed_at:
+          type: string
+          format: date-time
+        due_date:
+          type: string
+          format: date-time
+        returned_at:
+          type: string
+          format: date-time
+        status:
+          type: string
+          # why enum? - to restrict the value of status to a predefined set of values (borrowed, returned, overdue) which helps maintain data integrity and consistency in the API. It ensures that only valid statuses are used when creating or updating borrow records.
+          enum: [borrowed, returned, overdue]
+
+paths:
+  /auth/register:
+    post:
+      summary: Register a new member
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password, name]
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  format: password
+                name:
+                  type: string
+      responses:
+        '201':
+          description: Member registered successfully
+        '400':
+          description: Invalid input or email already exists
+
+  /auth/login:
+    post:
+      summary: Login to the system
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Login successful, returns JWT token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+
+        '401':
+          description: invalid email or password
+
+  /books:
+    get:
+      summary: List all books with optional filters
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+            description: Search by title or author
+        - name: genre
+          in: query
+          schema:
+            type: string
+            description: Filter by genre
+        - name: author
+          in: query
+          schema:
+            type: string
+            description: Filter by author
+
+      responses:
+        '200':
+          description: List of books returned successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Book'
+
+    post:
+      summary: Add a new book to the library - Admin only
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Book'
+      responses:
+        '201':
+          description: Book added successfully
+        '401':
+          description: Unauthorized - Admin access required
+
+  /books/{id}:
+    get:
+      summary: Get details of a specific book
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Book details returned successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Book'
+        '404':
+          description: Book not found
+
+  /borrows:
+    post:
+      summary: Borrow a book
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [book_id]
+              properties:
+                book_id:
+                  type: string
+                  format: uuid
+      responses:
+        '201':
+          description: Book borrowed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BorrowRecord'
+        '400':
+          description: Invalid input or book not available
+
+  /borrows/{id}/return:
+    patch:
+      summary: Return a borrowed book
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Book returned successfully
+        '404':
+          description: Borrow record not found
+
+  /borrows/my:
+    get:
+      summary: List my borrowed books
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: List of borrowed books returned successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BorrowRecord'
+        '401':
+          description: Unauthorized - Login required

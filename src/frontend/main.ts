@@ -1,13 +1,13 @@
 import './style.css';
 
-type Author = {
+interface Author{
   id: number;
   firstName: string;
   lastName: string;
   email: string;
 };
 
-type Article = {
+interface Article  {
   id: number;
   headline: string;
   text: string;
