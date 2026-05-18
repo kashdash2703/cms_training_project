@@ -1,13 +1,18 @@
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 
-export default defineConfig({
-  root: 'src/frontend',
-  server: {
-    port: 5173,
-    proxy: {
-      '/api': {
-        target: 'http://localhost:3000',
-        rewrite: (path) => path.replace(/^\/api/, '')
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), '')
+  const backendUrl = process.env.BACKEND_URL
+  
+  return {
+    root: 'src/frontend',
+    server: {
+      port: Number(env['FRONTEND_PORT'] || 5173),
+      proxy: {
+        '/api': {
+         target: backendUrl,
+         rewrite: (path) => path.replace(/^\/api/, '')
+        }
       }
     }
   }
