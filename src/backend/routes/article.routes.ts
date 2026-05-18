@@ -13,6 +13,6 @@ export async function articleRoutes (
     app.get('/search', {}, searchArticles);
     app.get('/', {}, getArticles);
     app.post('/', {}, createArticle);
-    app.put('/:id',{}, getArticleById );
-    app.put('/:id',{}, updateArticleById)
+    app.get('/:id',{}, getArticleById );
+    app.put('/:id',{}, updateArticleById);
 }
