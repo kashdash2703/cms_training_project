@@ -1,4 +1,5 @@
 import type {FastifyInstance} from 'fastify';
+
 import {
     getAuthors,
     getAuthorById,
@@ -6,6 +7,8 @@ import {
     updateAuthorById,
     searchAuthors
 } from '../controllers/author.controller.js';
+
+
 
 export async function authorRoutes (
     app: FastifyInstance

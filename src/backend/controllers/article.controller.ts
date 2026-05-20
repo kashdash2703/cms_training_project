@@ -1,21 +1,28 @@
 import type {FastifyRequest, FastifyReply} from 'fastify';
-import type {Article, ArticleParams, SearchQuery} from '../types/index.js';
+import type {CreateArticleInput, UpdateArticleInput} from '../services/article.service.js';
+import type {ArticleParams, SearchQuery} from '../types/index.js';
+import {ArticleService} from '../services/article.service.js';
+
+const articleService = new ArticleService();
 
 export async function getArticles (
     request: FastifyRequest,
     reply: FastifyReply
 ): Promise<void> {
-    reply.code(200).send([]);
+    const articles = articleService.getAllArticles();
+    reply.code(200).send(articles);
 }
 
 export async function createArticle (
-    request: FastifyRequest<{ Body: Omit<Article, 'id'>}>,
+    request: FastifyRequest<{ Body: CreateArticleInput}>,
     reply: FastifyReply
 ): Promise<void> {
     const body = request.body;
+    const article = articleService.createArticle(body);
+    
     reply.code(201).send({
         message:'Article created successfully',
-        data: body
+        data: article
 });
 }
 
@@ -24,18 +31,35 @@ export async function getArticleById (
     reply: FastifyReply
 ): Promise<void> {
     const {id} = request.params;
-    reply.code(200).send({message: `Get Articles by id ${id}`});
+    const article = articleService.getArticleById(id);
+
+    if (!article) {
+        reply.code(404).send({
+            message: `Àrticle with id {id} not found`,
+        });
+        return;
+    }
+    reply.code(200).send({article});
 }
 
 export async function updateArticleById (
-    request: FastifyRequest<{Params: ArticleParams; Body: Omit<Article, 'id'> }>,
+    request: FastifyRequest<{Params: ArticleParams; Body: UpdateArticleInput }>,
     reply: FastifyReply
 ): Promise<void> {
     const { id }  = request.params;
     const body = request.body;
+
+    const updatedArticle = articleService.updateArticleById(id,body);
+
+    if (!updatedArticle) {
+        reply.code(404).send({
+            message: `Article with id ${id} not found`,
+        });
+        return;
+    }
     reply.code(200).send({
         message: `Article with ${id} update successfully`,
-        data: body
+        data: updatedArticle
 });
 }
 
@@ -44,9 +68,11 @@ export async function searchArticles(
     reply: FastifyReply
 ): Promise<void> {
     const {q} = request.query;
+
+    const articles = articleService.searchArticles (q);
     reply.code(200).send({
         message: `Search Articles with query ${q}`,
-        data: []
+        data: articles
 });
 }
 

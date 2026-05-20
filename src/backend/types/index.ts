@@ -1,12 +1,12 @@
 export interface Author {
-    id: number;
+    id: string;
     first_name: string;
     last_name: string;
     email: string;
 }
 
 export interface Article {
-    id: number;
+    id: string;
     headline: string;
     text: string;
     authorId: number;
