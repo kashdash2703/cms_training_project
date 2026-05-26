@@ -66,10 +66,6 @@ export async function getArticles (
 ): Promise<void> {
     const articles = articleService.getArticles();
 
-    if (articles.length === 0) {
-    return reply.code(404).send({ message: 'No articles found' });
-    }
-
     return reply.code(200).send(articles);
 }
 

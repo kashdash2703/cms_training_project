@@ -38,10 +38,6 @@ export async function getAuthors (
     reply: FastifyReply
 ): Promise<void> {
     const authors = authorService.getAuthors();
-
-    if (authors.length === 0) {
-        return reply.code(404).send({ message: 'No authors found' });
-    }
     
     return reply.code(200).send(authors);
 }
