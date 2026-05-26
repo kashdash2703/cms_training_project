@@ -14,6 +14,7 @@ const articleService = new ArticleService(authorService);
 
 //  Helper functions
 // a. hasExistingAuthorId - checks whether there's an existing author
+
 function hasExistingAuthorId(
   body: CreateArticleInput | CreateArticleWithExistingAuthorInput
 ): body is CreateArticleWithExistingAuthorInput {
@@ -21,6 +22,7 @@ function hasExistingAuthorId(
 }
 
 // b. isValidCreateArticleInput - Validate create article input
+
 function isValidCreateArticleInput(
   body: CreateArticleInput | CreateArticleWithExistingAuthorInput
 ): boolean {
@@ -50,12 +52,14 @@ function isValidCreateArticleInput(
 }
 
 // c. isValidUpdateArticleInput -  Validate update article input
+
 function isValidUpdateArticleInput(body: UpdateArticleInput): boolean {
   return body.headline !== undefined || body.content !== undefined;
 }
 
 // Main functions
 // 1. GET /articles - Get a list of all articles
+
 export async function getArticles (
     request: FastifyRequest,
     reply: FastifyReply
@@ -71,6 +75,7 @@ export async function getArticles (
 
 
 // 2. POST /articles - Create a new article
+
 export async function createArticle (
     request: FastifyRequest<{ Body: CreateArticleInput | CreateArticleWithExistingAuthorInput }>,
     reply: FastifyReply
@@ -96,6 +101,7 @@ export async function createArticle (
 }
 
 // 3. GET /articles/search - Search for articles based on query
+
 export async function searchArticles (
     request: FastifyRequest<{ Querystring: SearchQuery }>,
     reply: FastifyReply
@@ -116,7 +122,41 @@ export async function searchArticles (
     return reply.code(200).send(searchResult);
 }
 
-// 4. PUT /articles/:id - Update an existing article by it's ID
+// 4. GET /articles/author/:id - Get list of articles written by an author
+
+export async function getArticlesByAuthorId(
+  request: FastifyRequest<{ Params: ArticleParams }>,
+  reply: FastifyReply
+): Promise<void> {
+  const { id } = request.params;
+
+  const article = articleService.getArticlesByAuthorId(id);
+
+  if (!article) {
+    return reply.code(404).send({ message: 'Author not found' });
+  }
+
+  return reply.code(200).send(article);
+}
+
+// 5. GET /articles/:id - Get article by ID
+
+export async function getArticleById (
+    request: FastifyRequest<{ Params: ArticleParams }>,
+    reply: FastifyReply
+): Promise<void> {
+    const { id } = request.params;
+    
+    const article = articleService.getArticleById(id);
+
+  if (!article) {
+    return reply.code(404).send({ message: 'Article not found' });
+  }
+
+  return reply.code(200).send(article);
+}
+
+// 6. PUT /articles/:id - Update an existing article by it's ID
 export async function updateArticleById (
     request: FastifyRequest<{ Params: ArticleParams; Body: UpdateArticleInput }>,
     reply: FastifyReply
@@ -139,7 +179,8 @@ export async function updateArticleById (
     }
 }
 
-// 5. DELETE /articles/:id - Delete an article 
+// 7. DELETE /articles/:id - Delete an article 
+
 export async function deleteArticleById(
     request: FastifyRequest<{ Params: ArticleParams }>,
     reply: FastifyReply

@@ -2,20 +2,20 @@ import type {FastifyInstance} from 'fastify';
 
 import {
     getAuthors,
-    getAuthorById,
     createAuthor,
+    searchAuthors,
+    getAuthorById,
     updateAuthorById,
-    searchAuthors
+    deleteAuthorById
 } from '../controllers/author.controller.js';
-
-
 
 export async function authorRoutes (
     app: FastifyInstance
 ): Promise<void> {
-    app.get('/search',{}, searchAuthors);
     app.get('/',{}, getAuthors);
-    app.get('/:id',{}, getAuthorById);
     app.post('/', {}, createAuthor);
+    app.get('/search', {}, searchAuthors);
+    app.get('/:id', {}, getAuthorById);
     app.put('/:id', {}, updateAuthorById);
+    app.delete('/:id', {}, deleteAuthorById);
 }

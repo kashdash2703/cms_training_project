@@ -1,6 +1,5 @@
 import type { 
     Author, 
-    Article, 
     AuthorSearchResult, 
     CreateAuthorInput, 
     UpdateAuthorInput, 
@@ -22,15 +21,7 @@ export class AuthorService {
             (author) => author.email === email
         );
     }
-
-    // b. getAuthorById - Get author by using the ID assigned to the specific author
-    // To retrieve articles of a specific author in 4. getArticlesByAuthorId()
-    getAuthorById(id: string): Author | undefined {
-        return this.authors.find(
-            (author) => author.id === id
-        );
-    }
-    
+ 
     // Main functions
 
     // 1. GET /authors - Get a list of all authors
@@ -84,18 +75,11 @@ export class AuthorService {
         };
     }
 
-    // 4. GET /authors/:id - Obtain list of articles by author ID
-    getArticlesByAuthorId(id: string): { author: Author; articles: Article[] } | undefined {
-        const author = this.getAuthorById(id);
-
-        if (!author) {
-            return undefined;
-        }
-
-        return {
-            author, 
-            articles: []
-        };
+    // 4. GET /authors/:id - Obtain author details by ID
+    getAuthorById(id: string): Author | undefined {
+        return this.authors.find(
+            (author) => author.id === id
+        );
     }
 
     // 5. PUT /authors/:id - Update an existing author

@@ -1,5 +1,4 @@
 import type { FastifyRequest, FastifyReply } from 'fastify';
-//import type { CreateAuthorInput, UpdateAuthorInput } from '../services/author.service.js';
 import type { 
     CreateAuthorInput,
     UpdateAuthorInput,
@@ -8,7 +7,7 @@ import type {
     } from '../types/index.js';
 import { AuthorService } from '../services/author.service.js';
 
-const authorService = new AuthorService;
+const authorService = new AuthorService();
 
 //  Helper functions
 // a. isValidCreateAuthorInput - Validate Create author input
@@ -89,20 +88,20 @@ export async function searchAuthors (
 }
 
 
-// 4. GET /authors/:id - Get list of articles written by an author
-export async function getArticlesByAuthorId (
+// 4. GET /authors/:id - Get author by ID
+export async function getAuthorById (
     request: FastifyRequest<{ Params: AuthorParams }>,
     reply: FastifyReply
 ): Promise<void> {
     const { id } = request.params;
     
-    const result = authorService.getArticlesByAuthorId(id);
+    const author = authorService.getAuthorById(id);
 
-  if (!result) {
+  if (!author) {
     return reply.code(404).send({ message: 'Author not found' });
   }
 
-  return reply.code(200).send(result);
+  return reply.code(200).send(author);
 }
 
 // 5. PUT /authors/:id - Update an existing author by their ID

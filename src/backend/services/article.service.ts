@@ -24,13 +24,7 @@ export class ArticleService {
   // getArticleById(), getExistingArticle(), ExistingAuthorId(),.. - not API endpoints - but internal support functions which makes service logic easier
 
   //  Helper functions
-  // A. getArticleById - Get article by ID
-
-  private getArticleById(id: string): Article | undefined {
-    return this.articles.find((article) => article.id=== id);
-  }
-
-  // B. getExistingArticle - Check if the article already exists
+  // A. getExistingArticle - Check if the article already exists
 
    private getExistingArticle(input: CreateArticleWithExistingAuthorInput): Article | undefined {
     const normalizedHeadline = input.headline.trim().toLowerCase();
@@ -45,7 +39,7 @@ export class ArticleService {
     });
   }
 
-  // C. ExistingAuthorId - Check whether the Author ID is already present
+  // B. ExistingAuthorId - Check whether the Author ID is already present
 
   private ExistingAuthorId(input: CreateArticleInput | CreateArticleWithExistingAuthorInput): input is CreateArticleWithExistingAuthorInput {
     return 'authorId' in input;
@@ -150,7 +144,31 @@ export class ArticleService {
     };
   }
 
-  // 4. PUT /articles/:id - Update an existing article
+  // 4. GET /articles/author/:id - Get list of articles written by an author
+  getArticlesByAuthorId(id: string): { author: Article['author']; articles: Article[] } | undefined {
+    const author = this.authorService.getAuthorById(id);
+
+    if (!author) {
+      return undefined;
+    }
+
+    const articlesByAuthor = this.articles.filter((article) => {
+      return article.author.id === id;
+    });
+
+    return {
+      author,
+      articles: articlesByAuthor,
+    };
+  }
+
+  // 5. getArticleById - Get article by ID
+
+  getArticleById(id: string): Article | undefined {
+    return this.articles.find((article) => article.id=== id);
+  }
+
+  // 6. PUT /articles/:id - Update an existing article
 
   updateArticleById( id: string, input: UpdateArticleInput): UpdateArticleResult {
     const article = this.getArticleById(id);
@@ -176,7 +194,7 @@ export class ArticleService {
     };
   }
   
-  // 5. DELETE /articles/:id - Delete an article
+  // 7. DELETE /articles/:id - Delete an article
 
   deleteArticleById(id: string): boolean {
     const articleIndex = this.articles.findIndex(
