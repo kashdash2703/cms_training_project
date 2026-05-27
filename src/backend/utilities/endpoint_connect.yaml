@@ -188,18 +188,6 @@ paths:
                       type: string
                       example: Invalid search query
 
-          '404':
-            description: No author found
-            content:
-              application/json:
-                schema:
-                  type: object
-                  properties:
-                    message:
-                      type: string
-                      example: No authors found 
-
-
   /authors/{id}:
   # 4. GET author details by Id
     get:
@@ -284,6 +272,17 @@ paths:
                   message:
                     type: string
                     example: No author found
+        
+        '409':                                  
+          description: Author already exists
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Author already exists
 
   # 6. Delete an existing author 
     delete:
@@ -428,17 +427,6 @@ paths:
                     message:
                       type: string
                       example: Invalid search query
-
-        '404':
-            description: No articles found
-            content:
-              application/json:
-                schema:
-                  type: object
-                  properties:
-                    message:
-                      type: string
-                      example: No articles found
 
   /articles/author/{id}:
   # 4. Get articles for a specific Author ID

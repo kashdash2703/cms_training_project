@@ -76,10 +76,6 @@ export async function searchAuthors (
     
     const searchResult = authorService.searchAuthors(q);
     
-    if (searchResult.totalSearchResults === 0) {
-        return reply.code(404).send({ message: 'No authors found' });
-    }
-    
     return reply.code(200).send(searchResult);
 }
 
@@ -119,7 +115,7 @@ export async function updateAuthorById (
     }
     
     if (!result.success && result.reason === 'already_exists') {
-        return reply.code(400).send({ message: 'Invalid input' });
+        return reply.code(409).send({ message: 'Author already exists' });
     }
     
     return reply.code(200).send(result.author);
