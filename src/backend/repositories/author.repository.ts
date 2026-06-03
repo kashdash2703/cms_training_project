@@ -1,17 +1,15 @@
 import type {
     Author,
     UpdateAuthorInput,
-    CreateAuthorInput,
-    AuthorSearchResult,
-    UpdateAuthorResult
+    CreateAuthorInput
 } from '../types/index.js';
 
 export interface AuthorRepository {
     findByEmail(email: string): Promise<Author | undefined>;
-    findAll():Promise<Author[]>;
-    create(input: CreateAuthorInput): Promise<Author | null>;
-    search(q: string): Promise<AuthorSearchResult>;
+    findAll(): Promise<Author[]>;
+    create(input: CreateAuthorInput): Promise<Author>;
+    search(q: string): Promise<Author[]>;
     findById(id: string): Promise<Author | undefined>;
-    updateById(id:string, input: UpdateAuthorInput): Promise<UpdateAuthorResult>;
+    updateById(id:string, input: UpdateAuthorInput): Promise<Author | undefined>;
     deleteById(id: string): Promise<boolean>;
 }

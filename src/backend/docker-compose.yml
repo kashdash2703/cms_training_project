@@ -1,0 +1,28 @@
+services:
+  # postgres:
+  #   image: postgres:16
+  #   container_name: cms-training-postgres
+  #   ports:
+  #     - "5432:5432"
+  #   environment:
+  #     POSTGRES_DB: cms_training_project
+  #     POSTGRES_USER: cms_user
+  #     POSTGRES_PASSWORD: cms_password
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+
+  mongodb:
+    image: mongo:8 #version 
+    container_name: cms-training-mongodb 
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_DB: cms_training_project
+      MONGO_USER: cms_user
+      MONGO_PASSWORD: cms_password
+    volumes:
+      - mongo_data:/data/db
+
+volumes:
+  # postgres_data:
+  mongo_data:

@@ -6,11 +6,8 @@ import type {
     ArticleParams,
     SearchQuery,
  } from '../types/index.js';
-import { ArticleService } from '../services/article.service.js';
-import { AuthorService } from '../services/author.service.js';
+import { articleService } from '../dependencies.js';
 
-const authorService = new AuthorService();
-const articleService = new ArticleService(authorService);
 
 //  Helper functions
 // a. hasExistingAuthorId - checks whether there's an existing author
@@ -26,6 +23,10 @@ function hasExistingAuthorId(
 function isValidCreateArticleInput(
   body: CreateArticleInput | CreateArticleWithExistingAuthorInput
 ): boolean {
+  if (body === undefined) {
+    return false;
+  }
+
   const hasValidHeadline =
     typeof body.headline === 'string' && body.headline.trim() !== '';
 
@@ -54,7 +55,13 @@ function isValidCreateArticleInput(
 // c. isValidUpdateArticleInput -  Validate update article input
 
 function isValidUpdateArticleInput(body: UpdateArticleInput): boolean {
-  return body.headline !== undefined || body.content !== undefined;
+  return (
+    body != undefined &&
+    (
+      body.headline !== undefined || 
+      body.content !== undefined
+    )
+  );
 }
 
 // Main functions
@@ -64,7 +71,7 @@ export async function getArticles (
     request: FastifyRequest,
     reply: FastifyReply
 ): Promise<void> {
-    const articles = articleService.getArticles();
+    const articles = await articleService.getArticles();
 
     return reply.code(200).send(articles);
 }
@@ -83,7 +90,7 @@ export async function createArticle (
         return reply.code(400).send({ message: 'Invalid input' });
     }
 
-    const result = articleService.createArticle(body);
+    const result = await articleService.createArticle(body);
 
     if (result.success) {
         return reply.code(201).send(result.article);
@@ -109,7 +116,11 @@ export async function searchArticles (
         return reply.code(400).send({ message: 'Invalid search query' });
     }
 
-    const searchResult = articleService.searchArticles(q);
+    const searchResult = await articleService.searchArticles(q);
+
+    if (searchResult.totalSearchResults === 0) {
+      return reply.code(404).send({ message: 'No articles found' });
+    }
 
     return reply.code(200).send(searchResult);
 }
@@ -122,7 +133,7 @@ export async function getArticlesByAuthorId(
 ): Promise<void> {
   const { id } = request.params;
 
-  const article = articleService.getArticlesByAuthorId(id);
+  const article = await articleService.getArticlesByAuthorId(id);
 
   if (!article) {
     return reply.code(404).send({ message: 'Author not found' });
@@ -139,7 +150,7 @@ export async function getArticleById (
 ): Promise<void> {
     const { id } = request.params;
     
-    const article = articleService.getArticleById(id);
+    const article = await articleService.getArticleById(id);
 
   if (!article) {
     return reply.code(404).send({ message: 'Article not found' });
@@ -160,7 +171,7 @@ export async function updateArticleById (
         return reply.code(400).send({ message: 'Invalid input' });
     }
 
-    const result = articleService.updateArticleById(id, body);
+    const result = await articleService.updateArticleById(id, body);
 
     if (!result.success && result.reason === 'not_found') {
         return reply.code(404).send({ message: 'Article not found' });
@@ -178,7 +189,7 @@ export async function deleteArticleById(
     reply: FastifyReply
 ): Promise<void> {
     const { id } = request.params;
-    const isDeleted = articleService.deleteArticleById(id);
+    const isDeleted = await articleService.deleteArticleById(id);
 
     if (!isDeleted) {
         return reply.code(404).send({ message: 'Article not found' });

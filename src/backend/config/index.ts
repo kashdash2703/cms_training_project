@@ -1,3 +1,5 @@
+// SETTINGS file for the entire application
+
 // 'dotenv/config' automatically reads .env file
 // And loads all variables into 'process.env'
 import 'dotenv/config';

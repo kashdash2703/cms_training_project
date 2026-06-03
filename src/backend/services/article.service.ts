@@ -5,18 +5,19 @@ import type {
   CreateArticleWithExistingAuthorInput,
   UpdateArticleInput, 
   UpdateArticleResult,
-  ArticleParams
   } from '../types/index.js';
 
+import type { ArticleRepository } from '../repositories/article.repository.js';
 import { AuthorService } from './author.service.js';
 
 export class ArticleService {
 
   // Database for articles
-  private articles: Article[] = [];
-
-  // ArticleService needs AuthorService because every article has an author
-  constructor(private authorService: AuthorService) {}
+  constructor(
+    private articleRepository: ArticleRepository,
+    // ArticleService needs AuthorService because every article has an author
+    private authorService: AuthorService
+  ) {}
 
   // According to OpenAPI Spec - each operationId 
   // getArticles(), createArticle(), searchArticles(), .. are methods - main service functions
@@ -26,22 +27,24 @@ export class ArticleService {
   //  Helper functions
   // A. getExistingArticle - Check if the article already exists
 
-   private getExistingArticle(input: CreateArticleWithExistingAuthorInput): Article | undefined {
-    const normalizedHeadline = input.headline.trim().toLowerCase();
-    const normalizedContent = input.content.trim().toLowerCase();
+   private async getExistingArticle(input: CreateArticleWithExistingAuthorInput): Promise<Article | undefined> {
+    // const normalizedHeadline = input.headline.trim().toLowerCase();
+    // const normalizedContent = input.content.trim().toLowerCase();
   
-    return this.articles.find((article) => {
-      return (
-        article.headline.trim().toLowerCase() === normalizedHeadline &&
-        article.content.trim().toLowerCase() === normalizedContent &&
-        article.author.id === input.authorId
-      );
-    });
-  }
+    return this.articleRepository.findExistingArticle(input);
+      
+  //     (article) => {
+  //     return (
+  //       article.headline.trim().toLowerCase() === normalizedHeadline &&
+  //       article.content.trim().toLowerCase() === normalizedContent &&
+  //       article.author.id === input.authorId
+  //     );
+  //   });
+    }
 
   // B. ExistingAuthorId - Check whether the Author ID is already present
 
-  private ExistingAuthorId(input: CreateArticleInput | CreateArticleWithExistingAuthorInput): input is CreateArticleWithExistingAuthorInput {
+  private hasExistingAuthorId(input: CreateArticleInput | CreateArticleWithExistingAuthorInput): input is CreateArticleWithExistingAuthorInput {
     return 'authorId' in input;
   }
 
@@ -49,17 +52,17 @@ export class ArticleService {
   // Main service functions
   // 1. GET /articles - Get a list of all articles
 
-  getArticles(): Article[] {
-    return this.articles;
+  async getArticles(): Promise<Article[]> {
+    return this.articleRepository.findAll();
   }
 
   // 2. POST /articles - Create a new article
 
-  createArticle(input: CreateArticleInput | CreateArticleWithExistingAuthorInput ) : UpdateArticleResult {
+  async createArticle(input: CreateArticleInput | CreateArticleWithExistingAuthorInput ) : Promise<UpdateArticleResult> {
     let articleAuthor;
 
-    if (this.ExistingAuthorId(input)) {
-      const existingAuthor = this.authorService.getAuthorById(input.authorId);
+    if (this.hasExistingAuthorId(input)) {
+      const existingAuthor = await this.authorService.getAuthorById(input.authorId);
 
       if (!existingAuthor) {
         return {
@@ -70,14 +73,14 @@ export class ArticleService {
     } 
     
     else {
-      const createdAuthor = this.authorService.createAuthor(input.author);
+      const createdAuthor = await this.authorService.createAuthor(input.author);
 
       if (createdAuthor) {
         articleAuthor = createdAuthor;
       }
 
       else {
-        const existingAuthor = this.authorService.getAuthorByEmail(
+        const existingAuthor = await this.authorService.getAuthorByEmail(
           input.author.email
         );
 
@@ -98,7 +101,7 @@ export class ArticleService {
       authorId: articleAuthor.id,
     };
 
-    const existingArticle = this.getExistingArticle(existingArticleInput);
+    const existingArticle = await this.getExistingArticle(existingArticleInput);
 
     if (existingArticle) {
       return {
@@ -107,14 +110,9 @@ export class ArticleService {
       };
     }
 
-    const newArticle: Article = {
-      id: crypto.randomUUID(),
-      headline: input.headline.trim(),
-      content: input.content.trim(),
-      author: articleAuthor,
-    };
+    const newArticle = await this.articleRepository.create(existingArticleInput);
 
-    this.articles.push(newArticle);
+    //this.articles.push(newArticle);
 
     return {
       success: true,
@@ -124,15 +122,16 @@ export class ArticleService {
 
   // 3. GET /articles/search - Search articles by keyword
 
-  searchArticles(q: string): ArticleSearchResult {
+ async searchArticles(q: string): Promise<ArticleSearchResult> {
     const searchText = q.trim().toLowerCase();
 
-    const matchingArticles = this.articles.filter((article) => {
-      return (
-        article.headline.toLowerCase().includes(searchText) ||
-        article.content.toLowerCase().includes(searchText)
-      );
-    });
+    const matchingArticles = await this.articleRepository.search(searchText);
+    //   article) => {
+    //   return (
+    //     article.headline.toLowerCase().includes(searchText) ||
+    //     article.content.toLowerCase().includes(searchText)
+    //   );
+    // });
 
     return {
       totalSearchResults: matchingArticles.length,
@@ -145,16 +144,17 @@ export class ArticleService {
   }
 
   // 4. GET /articles/author/:id - Get list of articles written by an author
-  getArticlesByAuthorId(id: string): { author: Article['author']; articles: Article[] } | undefined {
-    const author = this.authorService.getAuthorById(id);
+  async getArticlesByAuthorId(id: string): Promise<{ author: Article['author']; articles: Article[] } | undefined> {
+    const author = await this.authorService.getAuthorById(id);
 
     if (!author) {
       return undefined;
     }
 
-    const articlesByAuthor = this.articles.filter((article) => {
-      return article.author.id === id;
-    });
+    const articlesByAuthor = await this.articleRepository.findByAuthorId(id);
+    //   (article) => {
+    //   return article.author.id === id;
+    // });
 
     return {
       author,
@@ -164,14 +164,15 @@ export class ArticleService {
 
   // 5. getArticleById - Get article by ID
 
-  getArticleById(id: string): Article | undefined {
-    return this.articles.find((article) => article.id=== id);
+  async getArticleById(id: string): Promise<Article | undefined> {
+    return this.articleRepository.findById(id);
+      // (article) => article.id=== id);
   }
 
   // 6. PUT /articles/:id - Update an existing article
 
-  updateArticleById( id: string, input: UpdateArticleInput): UpdateArticleResult {
-    const article = this.getArticleById(id);
+  async updateArticleById( id: string, input: UpdateArticleInput): Promise<UpdateArticleResult> {
+    const article = await this.articleRepository.updateById(id, input);
 
     if (!article) {
       return {
@@ -180,13 +181,13 @@ export class ArticleService {
       };
     }
 
-    if (input.headline !== undefined) {
-      article.headline = input.headline.trim();
-    }
+    // if (input.headline !== undefined) {
+    //   article.headline = input.headline.trim();
+    // }
 
-    if (input.content !== undefined) {
-      article.content = input.content.trim();
-    }
+    // if (input.content !== undefined) {
+    //   article.content = input.content.trim();
+    // }
 
     return {
       success: true,
@@ -196,18 +197,16 @@ export class ArticleService {
   
   // 7. DELETE /articles/:id - Delete an article
 
-  deleteArticleById(id: string): boolean {
-    const articleIndex = this.articles.findIndex(
-      (article) => article.id === id
-    );
+  async deleteArticleById(id: string): Promise<boolean> {
+    // const articleIndex = this.articles.findIndex(
+    //   (article) => article.id === id
+    // );
 
-    if (articleIndex === -1) {
-      return false;
-    }
+    // if (articleIndex === -1) {
+    //   return false;
+    // }
 
-    this.articles.splice(articleIndex, 1);
-
-    return true;
+    return this.articleRepository.deleteById(id);
   }
 }
   
