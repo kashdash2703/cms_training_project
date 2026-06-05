@@ -1,3 +1,4 @@
+// Article repository interface (for any database (SQL/NoSQL) implementation)
 
 import type {
     Article,

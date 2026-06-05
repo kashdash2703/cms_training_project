@@ -28,18 +28,7 @@ export class ArticleService {
   // A. getExistingArticle - Check if the article already exists
 
    private async getExistingArticle(input: CreateArticleWithExistingAuthorInput): Promise<Article | undefined> {
-    // const normalizedHeadline = input.headline.trim().toLowerCase();
-    // const normalizedContent = input.content.trim().toLowerCase();
-  
     return this.articleRepository.findExistingArticle(input);
-      
-  //     (article) => {
-  //     return (
-  //       article.headline.trim().toLowerCase() === normalizedHeadline &&
-  //       article.content.trim().toLowerCase() === normalizedContent &&
-  //       article.author.id === input.authorId
-  //     );
-  //   });
     }
 
   // B. ExistingAuthorId - Check whether the Author ID is already present
@@ -112,8 +101,6 @@ export class ArticleService {
 
     const newArticle = await this.articleRepository.create(existingArticleInput);
 
-    //this.articles.push(newArticle);
-
     return {
       success: true,
       article: newArticle,
@@ -126,13 +113,6 @@ export class ArticleService {
     const searchText = q.trim().toLowerCase();
 
     const matchingArticles = await this.articleRepository.search(searchText);
-    //   article) => {
-    //   return (
-    //     article.headline.toLowerCase().includes(searchText) ||
-    //     article.content.toLowerCase().includes(searchText)
-    //   );
-    // });
-
     return {
       totalSearchResults: matchingArticles.length,
       results: matchingArticles.map((article) => {
@@ -152,9 +132,6 @@ export class ArticleService {
     }
 
     const articlesByAuthor = await this.articleRepository.findByAuthorId(id);
-    //   (article) => {
-    //   return article.author.id === id;
-    // });
 
     return {
       author,
@@ -181,14 +158,6 @@ export class ArticleService {
       };
     }
 
-    // if (input.headline !== undefined) {
-    //   article.headline = input.headline.trim();
-    // }
-
-    // if (input.content !== undefined) {
-    //   article.content = input.content.trim();
-    // }
-
     return {
       success: true,
       article,
@@ -198,13 +167,6 @@ export class ArticleService {
   // 7. DELETE /articles/:id - Delete an article
 
   async deleteArticleById(id: string): Promise<boolean> {
-    // const articleIndex = this.articles.findIndex(
-    //   (article) => article.id === id
-    // );
-
-    // if (articleIndex === -1) {
-    //   return false;
-    // }
 
     return this.articleRepository.deleteById(id);
   }

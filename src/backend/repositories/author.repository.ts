@@ -1,3 +1,5 @@
+// Author repository interface (for any database (SQL/NoSQL) implementation)
+
 import type {
     Author,
     UpdateAuthorInput,

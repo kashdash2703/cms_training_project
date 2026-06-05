@@ -11,7 +11,6 @@ import type { AuthorRepository } from '../repositories/author.repository.js';
 export class AuthorService {
 
     // Database for authors
-    //private authors: Author[] = [];
     constructor(private authorRepository: AuthorRepository) {}
     
     // Helper functions
@@ -57,13 +56,6 @@ export class AuthorService {
 
          // temporary variable created inside filter()
         const matchingAuthors = await this.authorRepository.search (searchText);
-        
-            //(author) => {
-            //return (
-                //author.firstName.toLowerCase().includes(searchText) || // || - (OR)
-                //author.lastName.toLowerCase().includes(searchText) ||
-                //author.email.toLowerCase().includes(searchText) 
-
 
         // Return the result in AuthorSearchResult format
         return {
@@ -109,29 +101,11 @@ export class AuthorService {
             return {success: false, reason: 'not_found'}
         }
 
-    // if (input.firstName !== undefined) {
-    //   author.firstName = input.firstName;
-    // }
-
-    // if (input.lastName !== undefined) {
-    //   author.lastName = input.lastName;
-    // }
-
-    // if (input.email !== undefined) {
-    //   author.email = input.email;
-    // }
-
         return {success: true, author: updatedAuthor};
     }
 
     // 6. DELETE /authors/:id - Delete an existing author
     async deleteAuthorById(id: string): Promise<boolean> {
-        //     (author) => author.id === id
-        // );
-
-        // if (authorIndex === -1) {
-        //     return false;
-        // }
 
         // this.authors.splice(authorIndex, 1);
         return this.authorRepository.deleteById(id);

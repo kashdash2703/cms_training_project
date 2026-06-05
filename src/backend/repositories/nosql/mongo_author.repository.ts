@@ -9,12 +9,13 @@ import type { AuthorRepository } from '../author.repository.js';
 import { mongoDb } from '../../db/mongo_client.js';
 
 type AuthorDocument = {
-  _id: string;
+  _id: string; // _id and not id beacuse MongoDB uses _id as the default primary key field
   firstName: string;
   lastName: string;
   email: string;
 };
 
+// Converter function which converts MongoDB format to API/service format
 function mapAuthorDocumentToAuthor(document: AuthorDocument): Author {
   return {
     id: document._id,
@@ -25,35 +26,39 @@ function mapAuthorDocumentToAuthor(document: AuthorDocument): Author {
 }
 
 export class MongoAuthorRepository implements AuthorRepository {
+  // Authors will be stored in the 'authors' collection in MongoDB
   private collection = mongoDb.collection<AuthorDocument>('authors');
 
+  // 1. Get all authors, sorted by first name
   async findAll(): Promise<Author[]> {
     const documents = await this.collection
-      .find()
-      .sort({ firstName: 1 })
-      .toArray();
+      .find() // get all documents
+      .sort({ firstName: 1 }) // sort by firstName in ascending order
+      .toArray(); // converts cursor to Array
 
-    return documents.map(mapAuthorDocumentToAuthor);
+    return documents.map(mapAuthorDocumentToAuthor);  // converts each MongoDB document to Author format
   }
 
+  // 2. Find author by email 
   async findByEmail(email: string): Promise<Author | undefined> {
-    const document = await this.collection.findOne({
+    const document = await this.collection.findOne({ // exact single match for email
       email: {
-        $regex: `^${email.trim()}$`,
-        $options: 'i',
+        $regex: `^${email.trim()}$`, // ^ = start, $ = end (exact match)
+        $options: 'i', // i = case-sensitive
       },
     });
 
     if (!document) {
-      return undefined;
+      return undefined; 
     }
 
     return mapAuthorDocumentToAuthor(document);
   }
 
+  // 3. Find author by id
   async findById(id: string): Promise<Author | undefined> {
     const document = await this.collection.findOne({
-      _id: id,
+      _id: id, // search by _id field in MongoDB
     });
 
     if (!document) {
@@ -63,12 +68,13 @@ export class MongoAuthorRepository implements AuthorRepository {
     return mapAuthorDocumentToAuthor(document);
   }
 
+  // 4. Search authors by first name, last name or email (partial match)
   async search(q: string): Promise<Author[]> {
     const searchText = q.trim();
 
     const documents = await this.collection
       .find({
-        $or: [
+        $or: [ // $or = match ANY of these conditions
           { firstName: { $regex: searchText, $options: 'i' } },
           { lastName: { $regex: searchText, $options: 'i' } },
           { email: { $regex: searchText, $options: 'i' } },
@@ -80,6 +86,7 @@ export class MongoAuthorRepository implements AuthorRepository {
     return documents.map(mapAuthorDocumentToAuthor);
   }
 
+  // 5. Create a new author
   async create(input: CreateAuthorInput): Promise<Author> {
     const newDocument: AuthorDocument = {
       _id: randomUUID(),
@@ -88,21 +95,19 @@ export class MongoAuthorRepository implements AuthorRepository {
       email: input.email.trim(),
     };
 
-    await this.collection.insertOne(newDocument);
+    await this.collection.insertOne(newDocument); // save to DB
 
-    return mapAuthorDocumentToAuthor(newDocument);
+    return mapAuthorDocumentToAuthor(newDocument); // Returns the created author in API format
   }
 
-  async updateById(
-    id: string,
-    input: UpdateAuthorInput
-  ): Promise<Author | undefined> {
+  // 6. Update an existing author by ID
+  async updateById(id: string, input: UpdateAuthorInput): Promise<Author | undefined> {
     const result = await this.collection.findOneAndUpdate(
       { _id: id },
       {
-        $set: {
+        $set: { // $set = only update the fields provided in input
           ...(input.firstName !== undefined && {
-            firstName: input.firstName.trim(),
+            firstName: input.firstName.trim(),  // only if provided
           }),
           ...(input.lastName !== undefined && {
             lastName: input.lastName.trim(),
@@ -113,7 +118,7 @@ export class MongoAuthorRepository implements AuthorRepository {
         },
       },
       {
-        returnDocument: 'after',
+        returnDocument: 'after', // return UPDATED document not old one
       }
     );
 
@@ -124,6 +129,7 @@ export class MongoAuthorRepository implements AuthorRepository {
     return mapAuthorDocumentToAuthor(result);
   }
 
+  // 7. Delete an author by ID
   async deleteById(id: string): Promise<boolean> {
     const result = await this.collection.deleteOne({
       _id: id,

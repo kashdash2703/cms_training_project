@@ -16,7 +16,7 @@
 
 // MongoDB
 import { MongoAuthorRepository } from './repositories/nosql/mongo_author.repository.js';
-import { MongoArticleRepository } from './repositories/nosql/mongo_Article.repository.js';
+import { MongoArticleRepository } from './repositories/nosql/mongo_article.repository.js';
 
 import { AuthorService } from './services/author.service.js';
 import { ArticleService } from './services/article.service.js';
