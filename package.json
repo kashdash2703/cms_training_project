@@ -11,7 +11,9 @@
     "test:local": "NODE_ENV=test BACKEND_PORT=3001 tsx watch src/backend/index.ts",
     "typecheck": "tsc --noEmit",
     "build": "tsc",
-    "start": "node dist/backend/index.js"
+    "start": "node dist/backend/index.js",
+    "test": "vitest run --config vitest.config.ts",
+    "test:watch": "vitest --config vitest.config.ts"
   },
   "keywords": [],
   "author": "",
@@ -23,7 +25,8 @@
     "concurrently": "^9.2.1",
     "tsx": "^4.22.0",
     "typescript": "^6.0.3",
-    "vite": "^8.0.10"
+    "vite": "^8.0.10",
+    "vitest": "^4.1.8"
   },
   "dependencies": {
     "dotenv": "^17.4.2",
