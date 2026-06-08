@@ -6,64 +6,57 @@ import type {
     UpdateAuthorResult 
     } from '../types/index.js';
 
+import type { AuthorRepository } from '../repositories/author.repository.js';
+
 export class AuthorService {
 
     // Database for authors
-    private authors: Author[] = [];
+    constructor(private authorRepository: AuthorRepository) {}
     
     // Helper functions
 
     // a. getAuthorByEmail - Check if author already exists by email since email is unique for each author
     // To check 409 conflict in 2. createAuthor()
 
-    getAuthorByEmail(email: string): Author | undefined {
-        return this.authors.find(
-            (author) => author.email === email
-        );
+    async getAuthorByEmail(email: string): Promise<Author | undefined> {
+        return this.authorRepository.findByEmail(email);
     }
  
     // Main functions
 
     // 1. GET /authors - Get a list of all authors
-    getAuthors(): Author[]  {
-        return this.authors; // return all authors from the DB
+    async getAuthors(): Promise<Author[]>  {
+        return this.authorRepository.findAll(); // return all authors from the DB
     }
 
     // 2. POST /authors - Create a new author
-    createAuthor(input: CreateAuthorInput): Author | null {
-        const existingAuthor = this.getAuthorByEmail(input.email);
+    async createAuthor(input: CreateAuthorInput): Promise<Author | null> {
+        const existingAuthor = await this.getAuthorByEmail(input.email);
 
         if (existingAuthor) {
             return null;
         }
 
-        const newAuthor: Author = {
-            id: crypto.randomUUID(), // generates a unique ID for the author
+        const newAuthor = await this.authorRepository.create({
             firstName: input.firstName,
             lastName: input.lastName,
             email: input.email,
-        };
+        });
 
-        this.authors.push(newAuthor); // add the new author to the DB
+        //this.authors.push(newAuthor); // add the new author to the DB
 
         return newAuthor;
     }
 
     // 3. GET /authors/search - Search authors based on query
-    searchAuthors(q: string): AuthorSearchResult {
+    async searchAuthors(q: string): Promise<AuthorSearchResult> {
         // Convert the user search text to lowercase once
         // This helps us perform case-insensitive search
-        const searchText = q.toLowerCase();
+        const searchText = q.trim().toLowerCase();
 
          // temporary variable created inside filter()
-        const matchingAuthors = this.authors.filter ((author) => {
-            return (
-                author.firstName.toLowerCase().includes(searchText) || // || - (OR)
-                author.lastName.toLowerCase().includes(searchText) ||
-                author.email.toLowerCase().includes(searchText) 
-            );
-        });
-        
+        const matchingAuthors = await this.authorRepository.search (searchText);
+
         // Return the result in AuthorSearchResult format
         return {
             totalSearchResults: matchingAuthors.length, //   matchingAuthors.length -> number of matches found
@@ -76,24 +69,22 @@ export class AuthorService {
     }
 
     // 4. GET /authors/:id - Obtain author details by ID
-    getAuthorById(id: string): Author | undefined {
-        return this.authors.find(
-            (author) => author.id === id
-        );
+    async getAuthorById(id: string): Promise<Author | undefined> {
+        return this.authorRepository.findById(id);
     }
 
     // 5. PUT /authors/:id - Update an existing author
     // Updates firstName, lastName or email of an existing author
     // NOTE: articles of that particular author remain unchanged
-    updateAuthorById(id: string, input: UpdateAuthorInput): UpdateAuthorResult {
-        const author = this.getAuthorById(id);
+    async updateAuthorById(id: string, input: UpdateAuthorInput): Promise<UpdateAuthorResult> {
+        const author = await this.getAuthorById(id);
 
         if (!author) {
             return {success: false, reason: 'not_found'};
         }
 
         if (input.email !== undefined) {
-            const existingAuthorWithSameEmail = this.getAuthorByEmail(input.email);
+            const existingAuthorWithSameEmail = await this.getAuthorByEmail(input.email);
 
             const emailBelongsToAnotherAuthor =
             existingAuthorWithSameEmail !== undefined &&
@@ -104,33 +95,19 @@ export class AuthorService {
             }
         }
 
-    if (input.firstName !== undefined) {
-      author.firstName = input.firstName;
-    }
+        const updatedAuthor = await this.authorRepository.updateById(id, input);
 
-    if (input.lastName !== undefined) {
-      author.lastName = input.lastName;
-    }
+        if (!updatedAuthor) {
+            return {success: false, reason: 'not_found'}
+        }
 
-    if (input.email !== undefined) {
-      author.email = input.email;
-    }
-
-        return {success: true, author};
+        return {success: true, author: updatedAuthor};
     }
 
     // 6. DELETE /authors/:id - Delete an existing author
-    deleteAuthorById(id: string): boolean {
-        const authorIndex = this.authors.findIndex(
-            (author) => author.id === id
-        );
+    async deleteAuthorById(id: string): Promise<boolean> {
 
-        if (authorIndex === -1) {
-            return false;
-        }
-
-        this.authors.splice(authorIndex, 1);
-
-        return true;
+        // this.authors.splice(authorIndex, 1);
+        return this.authorRepository.deleteById(id);
     }
 }

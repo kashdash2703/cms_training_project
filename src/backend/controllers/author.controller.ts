@@ -5,29 +5,34 @@ import type {
     AuthorParams,
     SearchQuery,
     } from '../types/index.js';
-import { AuthorService } from '../services/author.service.js';
 
-const authorService = new AuthorService();
+import { authorService } from '../dependencies.js';
+
+// const authorService = new AuthorService(); - replaced by dependencies.js
 
 //  Helper functions
 // a. isValidCreateAuthorInput - Validate Create author input
 function isValidCreateAuthorInput(body: CreateAuthorInput): boolean {
   return (
+    body !== undefined &&
     typeof body.firstName === 'string' &&
     body.firstName.trim() !== '' &&
     typeof body.lastName === 'string' &&
     body.lastName.trim() !== '' &&
     typeof body.email === 'string' &&
-    body.email.trim() !== ''
+    body.email.trim() !== '' 
   );
 }
 
 // b. isValidUpdateAuthorInput - Validate Update author input
 function isValidUpdateAuthorInput(body: UpdateAuthorInput): boolean {
   return (
+    body !== undefined && 
+    (
     body.firstName !== undefined ||
     body.lastName !== undefined ||
     body.email !== undefined
+    )
   );
 }
 
@@ -37,7 +42,7 @@ export async function getAuthors (
     request: FastifyRequest,
     reply: FastifyReply
 ): Promise<void> {
-    const authors = authorService.getAuthors();
+    const authors = await authorService.getAuthors();
     
     return reply.code(200).send(authors);
 }
@@ -53,7 +58,7 @@ export async function createAuthor (
         return reply.code(400).send({ message: 'Invalid input' });
     }
 
-    const author = authorService.createAuthor(body);
+    const author = await authorService.createAuthor(body);
 
     if (!author) {
         return reply.code(409).send({ message: 'Author already exists' });
@@ -74,7 +79,7 @@ export async function searchAuthors (
         return reply.code(400).send({ message: 'Invalid search query' });
     }
     
-    const searchResult = authorService.searchAuthors(q);
+    const searchResult = await authorService.searchAuthors(q);
     
     return reply.code(200).send(searchResult);
 }
@@ -87,7 +92,7 @@ export async function getAuthorById (
 ): Promise<void> {
     const { id } = request.params;
     
-    const author = authorService.getAuthorById(id);
+    const author =await authorService.getAuthorById(id);
 
   if (!author) {
     return reply.code(404).send({ message: 'Author not found' });
@@ -108,7 +113,7 @@ export async function updateAuthorById (
         return reply.code(400).send({ message: 'Invalid input' });
     }
     
-    const result = authorService.updateAuthorById(id, body);
+    const result = await authorService.updateAuthorById(id, body);
     
     if (!result.success && result.reason === 'not_found') {
         return reply.code(404).send({ message: 'No author found' });
@@ -128,7 +133,7 @@ export async function deleteAuthorById (
 ): Promise<void> {
   const { id } = request.params;
   
-  const isDeleted = authorService.deleteAuthorById(id);
+  const isDeleted = await authorService.deleteAuthorById(id);
 
   if (!isDeleted) {
     return reply.code(404).send({ message: 'Author not found' });
