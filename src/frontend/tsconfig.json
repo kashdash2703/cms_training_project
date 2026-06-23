@@ -3,13 +3,15 @@
   "compilerOptions": {
     // File Layout
      "rootDir": "./",
-     "outDir": "./dist",
+     "outDir": "../../dist/frontend",
+     "esModuleInterop": true,
 
     // Environment Settings
     // See also https://aka.ms/tsconfig/module
-    "module": "nodenext",
-    "target": "esnext",
+    "module": "esnext",
+    "target": "es2025",
     "types": ["vite/client"],
+    "moduleResolution": "bundler",
     // For nodejs:
     // "lib": ["esnext"],
     // "types": ["node"],
