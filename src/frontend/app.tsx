@@ -8,45 +8,59 @@ type Mode = 'none' | 'create' | 'update-author' | 'update-article' | 'delete';
 
 
 export function App() {
+  // Main backend data shown in the two lists.
   const [authors, setAuthors] = useState<Author[]>([]);
   const [articles, setArticles] = useState<Article[]>([]);
 
+  // UI state: mode decides which panel is open; message shows feedback to the user.
   const [mode, setMode] = useState<Mode>('none');
   const [searchText, setSearchText] = useState('');
   const [message, setMessage] = useState('');
 
+  // Stores IDs selected by delete checkboxes.
   const [selectedAuthorIds, setSelectedAuthorIds] = useState<string[]>([]);
   const [selectedArticleIds, setSelectedArticleIds] = useState<string[]>([]);
+
+  // These booleans control which create/delete sub-form is visible.
+  // The handlers below make Author and Article mutually exclusive.
   const [showCreateAuthor, setShowCreateAuthor] = useState(false);
   const [showCreateArticle, setShowCreateArticle] = useState(false);
   const [showDeleteAuthors, setShowDeleteAuthors] = useState(false);
   const [showDeleteArticles, setShowDeleteArticles] = useState(false);
+
+  // Holds the selected author's articles when an author card is clicked.
   const [authorArticleView, setAuthorArticleView] = useState<{
     author: Author;
     articles: Article[];
   } | null>(null);
 
+  // Controlled form state for the author form.
   const [authorForm, setAuthorForm] = useState({
     firstName: '',
     lastName: '',
     email: '',
   });
 
+  // Controlled form state for the article form.
   const [articleForm, setArticleForm] = useState({
     headline: '',
     content: '',
     authorId: '',
   });
 
+  // Empty means no record is currently being edited.
   const [editingAuthorId, setEditingAuthorId] = useState('');
   const [editingArticleId, setEditingArticleId] = useState('');
 
+  // Load authors and articles once when the component first appears.
   useEffect(() => {
     loadInitialData();
   }, []);
 
+  // Shared reload function used after create, update, delete, clear, and first page load.
   async function loadInitialData() {
     try {
+      // Promise.all runs both backend requests at the same time.
       const [authorsData, articlesData] = await Promise.all([
         cmsApi.getAuthors(),
         cmsApi.getArticles(),
@@ -60,6 +74,7 @@ export function App() {
     }
   }
 
+  // Searches authors and articles together using one search box.
   async function handleCommonSearch() {
     if (searchText.trim() === '') {
       await loadInitialData();
@@ -81,7 +96,9 @@ export function App() {
     }
   }
 
+  // Form submit handler for creating an author.
   async function handleCreateAuthor(event: React.SubmitEvent<HTMLFormElement>) {
+    // Prevents the browser's default full-page form submission.
     event.preventDefault();
 
     try {
@@ -94,6 +111,7 @@ export function App() {
     }
   }
 
+  // Form submit handler for creating an article with an existing author.
   async function handleCreateArticle(event: React.SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
 
@@ -107,6 +125,7 @@ export function App() {
     }
   }
 
+  // Opens create mode and clears delete/update selections so modes do not overlap.
   function openCreateMode() {
     setMode('create');
     setEditingAuthorId('');
@@ -117,6 +136,7 @@ export function App() {
     setSelectedArticleIds([]);
   }
 
+  // Opens delete mode and clears create/update state.
   function openDeleteMode() {
     setMode('delete');
     setEditingAuthorId('');
@@ -125,11 +145,13 @@ export function App() {
     setShowCreateArticle(false);
   }
 
+  // Keeps create target mutually exclusive: choose Author or Article, not both.
   function chooseCreateTarget(target: 'author' | 'article', checked: boolean) {
     setShowCreateAuthor(target === 'author' ? checked : false);
     setShowCreateArticle(target === 'article' ? checked : false);
   }
 
+  // Keeps delete target mutually exclusive and clears old selected IDs when switching.
   function chooseDeleteTarget(target: 'authors' | 'articles', checked: boolean) {
     setShowDeleteAuthors(target === 'authors' ? checked : false);
     setShowDeleteArticles(target === 'articles' ? checked : false);
@@ -137,6 +159,7 @@ export function App() {
     setSelectedArticleIds([]);
   }
 
+  // Opens the author update form and pre-fills it with the selected author's values.
   function startUpdateAuthor(author: Author) {
     setMode('update-author');
     setShowCreateAuthor(false);
@@ -153,6 +176,7 @@ export function App() {
     });
   }
 
+  // Opens the article update form and pre-fills it with the selected article's values.
   function startUpdateArticle(article: Article) {
     setMode('update-article');
     setShowCreateAuthor(false);
@@ -169,6 +193,7 @@ export function App() {
     });
   }
 
+  // Sends the edited author fields to the backend.
   async function handleUpdateAuthor(event: React.FormEvent) {
     event.preventDefault();
 
@@ -183,6 +208,7 @@ export function App() {
     }
   }
 
+  // Sends the edited article fields to the backend.
   async function handleUpdateArticle(event: React.FormEvent) {
     event.preventDefault();
 
@@ -201,6 +227,7 @@ export function App() {
     }
   }
 
+  // Adds/removes an author ID from the selected delete list.
   function toggleAuthorSelection(id: string) {
     setSelectedAuthorIds((currentIds) =>
       currentIds.includes(id)
@@ -209,6 +236,7 @@ export function App() {
     );
   }
 
+  // Adds/removes an article ID from the selected delete list.
   function toggleArticleSelection(id: string) {
     setSelectedArticleIds((currentIds) =>
       currentIds.includes(id)
@@ -217,6 +245,7 @@ export function App() {
     );
   }
 
+  // Clicking an author loads a focused list of articles written by that author.
   async function showArticlesByAuthor(author: Author) {
     try {
       const result = await cmsApi.getArticlesByAuthorId(author.id);
@@ -227,6 +256,7 @@ export function App() {
     }
   }
 
+  // Deletes every selected author, then refreshes the main data lists.
   async function deleteSelectedAuthors() {
     try {
       await Promise.all(selectedAuthorIds.map((id) => cmsApi.deleteAuthor(id)));
@@ -239,6 +269,7 @@ export function App() {
     }
   }
 
+  // Deletes every selected article, then refreshes the main data lists.
   async function deleteSelectedArticles() {
     try {
       await Promise.all(selectedArticleIds.map((id) => cmsApi.deleteArticle(id)));
@@ -256,6 +287,7 @@ export function App() {
       <header className="hero">
         <h1>CMS Engine</h1>
 
+        {/* Search is controlled by React state, so searchText is always the input value. */}
         <div className="search-bar">
           <input
             value={searchText}
@@ -299,6 +331,7 @@ export function App() {
 
       {message && <p className="message">{message}</p>}
 
+      {/* Create mode first asks whether the user wants to create an author or article. */}
       {mode === 'create' && (
         <section className="panel">
           <h2>Create</h2>
@@ -329,6 +362,7 @@ export function App() {
         </section>
       )}
 
+      {/* Render the Create Author form only when its checkbox is selected. */}
       {mode === 'create' && showCreateAuthor && (
         <section className="panel">
           <h2>Create Author</h2>
@@ -363,6 +397,7 @@ export function App() {
         </section>
       )}
 
+      {/* Render the Create Article form only when its checkbox is selected. */}
       {mode === 'create' && showCreateArticle && (
         <section className="panel">
           <h2>Create Article</h2>
@@ -403,6 +438,7 @@ export function App() {
         </section>
       )}
 
+      {/* Update panels are shown after clicking an Update button on a card. */}
       {mode === 'update-author' && editingAuthorId && (
         <section className="panel">
           <h2>Update Author</h2>
@@ -458,6 +494,7 @@ export function App() {
         </section>
       )}
 
+      {/* Delete mode first asks whether the user wants to delete authors or articles. */}
       {mode === 'delete' && (
         <section className="panel">
           <h2>Delete</h2>
@@ -510,6 +547,7 @@ export function App() {
         </section>
       )}
 
+      {/* This detail panel appears after clicking an author card. */}
       {authorArticleView && (
         <section className="panel">
           <h2>
@@ -530,6 +568,7 @@ export function App() {
         </section>
       )}
 
+      {/* Main content lists: articles on the left, authors on the right. */}
       <section className="content-grid">
         <section>
           <h2>Articles</h2>
@@ -538,6 +577,7 @@ export function App() {
 
           {articles.map((article) => (
             <article key={article.id} className="result-card">
+              {/* Article delete checkbox appears only in Delete > Articles mode. */}
               {mode === 'delete' && showDeleteArticles && (
                 <input
                   type="checkbox"
@@ -570,6 +610,7 @@ export function App() {
           {authors.length === 0 && <p className="empty">No authors found.</p>}
 
           {authors.map((author) => (
+            // The whole author card is clickable so users can view that author's articles.
             <article
               key={author.id}
               className="result-card author-card clickable-card"
@@ -587,6 +628,7 @@ export function App() {
                 }
               }}
             >
+              {/* Author delete checkbox appears only in Delete > Authors mode. */}
               {mode === 'delete' && showDeleteAuthors && (
                 <input
                   type="checkbox"
@@ -605,6 +647,7 @@ export function App() {
               <div className="card-actions">
                 <button
                   onClick={(event) => {
+                    // Prevents the button click from also triggering the author card click.
                     event.stopPropagation();
                     startUpdateAuthor(author);
                   }}

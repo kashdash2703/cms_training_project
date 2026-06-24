@@ -6,8 +6,12 @@ import type {
   ArticlesByAuthorResponse,
 } from './types';
 
+// The frontend calls /api/... and Vite forwards it to the backend.
+// Example: /api/authors becomes http://localhost:3000/authors.
 const API_BASE = '/api';
 
+// Reusable helper for all backend requests.
+// <T> lets each caller say what response shape it expects.
 async function request<T>(
   url: string,
   options?: RequestInit
@@ -15,11 +19,14 @@ async function request<T>(
   let response: Response;
   const headers = new Headers(options?.headers);
 
+  // Only send JSON content-type when a request body exists.
+  // DELETE requests usually have no body; adding this header there causes Fastify warnings.
   if (options?.body !== undefined && !headers.has('Content-Type')) {
     headers.set('Content-Type', 'application/json');
   }
 
   try {
+    // fetch is the browser API used to call the backend.
     response = await fetch(`${API_BASE}${url}`, {
       ...options,
       headers,
@@ -28,6 +35,7 @@ async function request<T>(
     throw new Error('Backend is unavailable. Start the backend server and refresh.');
   }
 
+  // response.ok is false for HTTP errors like 400, 404, and 500.
   if (!response.ok) {
     const errorBody = await response.json().catch(() => null);
     const message =
@@ -38,9 +46,12 @@ async function request<T>(
     throw new Error(message);
   }
 
+  // Convert the backend JSON response into the expected TypeScript type.
   return response.json() as Promise<T>;
 }
 
+// A single object that contains every backend operation the UI needs.
+// Keeping API calls here keeps app.tsx focused on UI behavior.
 export const cmsApi = {
   getAuthors(): Promise<Author[]> {
     return request<Author[]>('/authors');
@@ -82,6 +93,7 @@ export const cmsApi = {
       `/authors/search?q=${encodeURIComponent(q)}`
     );
 
+    // The backend wraps each author in { author }, so the UI extracts the actual authors.
     return response.results.map((result) => result.author);
   },
 
@@ -129,6 +141,7 @@ export const cmsApi = {
         `/articles/search?q=${encodeURIComponent(q)}`
       );
 
+      // The backend wraps each article in { article }, so the UI extracts the actual articles.
       return response.results.map((result) => result.article);
     } catch (error) {
       /*
