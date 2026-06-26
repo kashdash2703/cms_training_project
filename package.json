@@ -13,6 +13,7 @@
     "build": "pnpm --filter cms-backend build",
     "build:frontend": "pnpm --filter cms-frontend build",
     "test": "pnpm --filter cms-backend test",
+    "test:frontend": "pnpm --filter cms-frontend test",
     "test:watch": "pnpm --filter cms-backend test:watch",
     "start": "pnpm --filter cms-backend start"
   },

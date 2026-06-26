@@ -91,6 +91,12 @@ Run tests:
 pnpm test
 ```
 
+Run frontend tests:
+
+```bash
+pnpm run test:frontend
+```
+
 Stop Docker services:
 
 ```bash
