@@ -1,42 +1,26 @@
 {
-  "name": "cms_project",
+  "name": "cms-training-project",
   "version": "1.0.0",
-  "description": "Create, Search and Retrieve Articles",
+  "description": "Create, search, update, and delete CMS authors and articles",
+  "private": true,
   "type": "module",
-  "main": "index.js",
   "scripts": {
-     "dev": "concurrently \"pnpm run dev:backend\" \"pnpm run dev:frontend\"",
-    "dev:frontend": "vite --mode development",
-    "dev:backend": "tsx watch src/backend/index.ts",
-    "test:local": "NODE_ENV=test BACKEND_PORT=3001 tsx watch src/backend/index.ts",
-    "typecheck": "tsc --noEmit -p src/backend/tsconfig.json",
-    "build": "tsc -p src/backend/tsconfig.json",
-    "start": "node dist/backend/index.js",
-    "test": "vitest run --config vitest.config.ts",
-    "test:watch": "vitest --config vitest.config.ts"
+    "dev": "concurrently \"pnpm --filter cms-backend dev\" \"pnpm --filter cms-frontend dev\"",
+    "dev:backend": "pnpm --filter cms-backend dev",
+    "dev:frontend": "pnpm --filter cms-frontend dev",
+    "typecheck": "pnpm --filter cms-backend typecheck",
+    "typecheck:frontend": "pnpm --filter cms-frontend typecheck",
+    "build": "pnpm --filter cms-backend build",
+    "build:frontend": "pnpm --filter cms-frontend build",
+    "test": "pnpm --filter cms-backend test",
+    "test:watch": "pnpm --filter cms-backend test:watch",
+    "start": "pnpm --filter cms-backend start"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "packageManager": "pnpm@10.33.0",
   "devDependencies": {
-    "@types/node": "^25.6.0",
-    "@types/pg": "^8.20.0",
-    "@types/react": "^19.2.17",
-    "@types/react-dom": "^19.2.3",
-    "@vitejs/plugin-react": "^6.0.2",
-    "concurrently": "^9.2.1",
-    "tsx": "^4.22.0",
-    "typescript": "^6.0.3",
-    "vite": "^8.0.10",
-    "vitest": "^4.1.8"
-  },
-  "dependencies": {
-    "dotenv": "^17.4.2",
-    "fastify": "^5.8.5",
-    "mongodb": "^7.2.0",
-    "pg": "^8.21.0",
-    "react": "^19.2.7",
-    "react-dom": "^19.2.7"
+    "concurrently": "^9.2.1"
   }
 }

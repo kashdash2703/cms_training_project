@@ -13,7 +13,7 @@ It is not ordered by file line number. It is ordered by how developers usually t
 
 ## Step 1: Start With The HTML Mount Point
 
-File: `src/frontend/index.html`
+File: `index.html`
 
 The first thing the frontend needs is a place where React can appear.
 
@@ -192,7 +192,7 @@ Why CSS comes early:
 
 ## Step 6: Define The Data Shapes
 
-File: `src/frontend/types.ts`
+File: `src/frontend/types/index.ts`
 
 Before calling the backend, define what data the frontend expects.
 
@@ -255,7 +255,7 @@ Before I fetch data, I want TypeScript to know what that data looks like.
 
 ## Step 7: Create The API Helper
 
-File: `src/frontend/api.ts`
+File: `src/frontend/api/cms.api.ts`
 
 Now write the code that talks to the backend.
 
@@ -293,7 +293,7 @@ http://localhost:3000/authors
 
 ## Step 8: Write One Reusable Request Function
 
-File: `src/frontend/api.ts`
+File: `src/frontend/api/cms.api.ts`
 
 Instead of writing `fetch` again and again, create one helper:
 
@@ -357,7 +357,7 @@ All backend calls should behave consistently.
 
 ## Step 9: Add API Methods One By One
 
-File: `src/frontend/api.ts`
+File: `src/frontend/api/cms.api.ts`
 
 Start with read-only methods first because they are safer.
 
@@ -428,7 +428,7 @@ import { useEffect, useState } from 'react';
 Import API:
 
 ```ts
-import { cmsApi } from './api';
+import { cmsApi } from './api/cms.api';
 ```
 
 Import types:
@@ -977,7 +977,7 @@ The delete checkbox uses the same idea.
 
 ## Step 22: Connect Frontend To Backend Through Vite
 
-File: `vite.config.ts`
+File: `src/frontend/vite.config.ts`
 
 The frontend runs at:
 
@@ -1058,13 +1058,13 @@ Authors and articles appear.
 Frontend typecheck:
 
 ```bash
-pnpm exec tsc --noEmit -p src/frontend/tsconfig.json
+pnpm run typecheck:frontend
 ```
 
 Frontend build:
 
 ```bash
-pnpm exec vite build --mode development
+pnpm run build:frontend
 ```
 
 Backend typecheck:
@@ -1098,7 +1098,7 @@ If this project were written from scratch, a developer would usually build it li
 19. `api.ts`: add articles-by-author method.
 20. `app.tsx`: make author cards clickable and show detail panel.
 21. `style.css`: polish panels, cards, buttons, and responsive layout.
-22. `vite.config.ts`: make sure `/api` proxy works.
+22. `src/frontend/vite.config.ts`: make sure `/api` proxy works.
 23. Run typecheck/build.
 24. Test manually in browser.
 

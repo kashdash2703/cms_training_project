@@ -1,10 +1,11 @@
+// Frontend HTTP client — all requests to the backend go through here.
 import type {
   Author,
   Article,
   AuthorSearchResponse,
   ArticleSearchResponse,
   ArticlesByAuthorResponse,
-} from './types';
+} from '../types';
 
 // The frontend calls /api/... and Vite forwards it to the backend.
 // Example: /api/authors becomes http://localhost:3000/authors.
@@ -136,19 +137,11 @@ export const cmsApi = {
   },
 
   async searchArticles(q: string): Promise<Article[]> {
-    try {
-      const response = await request<ArticleSearchResponse>(
-        `/articles/search?q=${encodeURIComponent(q)}`
-      );
+    const response = await request<ArticleSearchResponse>(
+      `/articles/search?q=${encodeURIComponent(q)}`
+    );
 
-      // The backend wraps each article in { article }, so the UI extracts the actual articles.
-      return response.results.map((result) => result.article);
-    } catch (error) {
-      /*
-        Your backend returns 404 when no articles are found.
-        For frontend, we show empty results instead of crashing.
-      */
-      return [];
-    }
+    // The backend wraps each article in { article }, so the UI extracts the actual articles.
+    return response.results.map((result) => result.article);
   },
 };
