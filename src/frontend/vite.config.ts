@@ -14,8 +14,9 @@ export default defineConfig(({ mode }) => {
     server: {
       host: env['FRONTEND_HOST'] || 'localhost',
       port: Number(env['FRONTEND_PORT'] || 5173),
+      strictPort: true,
       proxy: {
-        '^/api(/|$)': {
+        '^/api/(authors|articles)(/|$)': {
           target: backendUrl,
           changeOrigin: true,
           rewrite: (path) => path.replace(/^\/api(?=\/|$)/, ''),

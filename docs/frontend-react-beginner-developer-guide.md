@@ -28,7 +28,7 @@ src/frontend/index.html
 src/frontend/package.json
 src/frontend/tsconfig.json
 src/frontend/vite.config.ts
-src/frontend/main.tsx
+src/frontend/src/main.tsx
 src/frontend/style.css
 src/frontend/types/index.ts
 src/frontend/api/cms.api.ts
@@ -73,13 +73,13 @@ They write:
 
 1. A normal HTML document.
 2. A `<div id="root"></div>`.
-3. A script that loads `src/frontend/main.tsx`.
+3. A script that loads `src/frontend/src/main.tsx`.
 
 Why this comes first: without `src/frontend/index.html`, the browser has no page to open.
 
 ### Step 2: Mount React Into The Page
 
-Then write `src/frontend/main.tsx`.
+Then write `src/frontend/src/main.tsx`.
 
 The developer imports:
 
@@ -535,14 +535,14 @@ This empty `div` is where React will place the app.
 Line 11:
 
 ```html
-<script type="module" src="/main.tsx"></script>
+<script type="module" src="./src/main.tsx"></script>
 ```
 
 Loads the TypeScript React entry file.
 
 Lines 12-13 close `body` and `html`.
 
-## `src/frontend/main.tsx`
+## `src/frontend/src/main.tsx`
 
 Purpose: connect React to `src/frontend/index.html`.
 
