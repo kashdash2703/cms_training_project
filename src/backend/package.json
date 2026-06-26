@@ -4,13 +4,13 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "DOTENV_CONFIG_PATH=../../.env tsx watch index.ts",
-    "test:local": "DOTENV_CONFIG_PATH=../../.env NODE_ENV=test BACKEND_PORT=3001 tsx watch index.ts",
+    "dev": "DOTENV_CONFIG_PATH=.env tsx watch index.ts",
+    "test:local": "DOTENV_CONFIG_PATH=.env NODE_ENV=test BACKEND_PORT=3001 tsx watch index.ts",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "build": "tsc -p tsconfig.json",
     "start": "node ../../dist/backend/index.js",
-    "test": "DOTENV_CONFIG_PATH=../../.env vitest run --config vitest.config.ts",
-    "test:watch": "DOTENV_CONFIG_PATH=../../.env vitest --config vitest.config.ts"
+    "test": "DOTENV_CONFIG_PATH=.env vitest run --config vitest.config.ts",
+    "test:watch": "DOTENV_CONFIG_PATH=.env vitest --config vitest.config.ts"
   },
   "dependencies": {
     "dotenv": "^17.4.2",
