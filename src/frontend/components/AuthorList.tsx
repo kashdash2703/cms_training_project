@@ -1,4 +1,5 @@
 import type { Author, Mode } from '../types';
+import { AuthorCard } from './AuthorCard';
 
 type AuthorListProps = {
   authors: Author[];
@@ -26,49 +27,15 @@ export function AuthorList({
       {authors.length === 0 && <p className="empty">No authors found.</p>}
 
       {authors.map((author) => (
-        <article
+        <AuthorCard
           key={author.id}
-          className="result-card author-card clickable-card"
-          role="button"
-          tabIndex={0}
+          author={author}
+          showDeleteCheckbox={mode === 'delete' && showDeleteAuthors}
+          isSelected={selectedAuthorIds.includes(author.id)}
+          onSelect={() => onToggleAuthorSelection(author.id)}
+          onUpdate={() => onStartUpdateAuthor(author)}
           onClick={() => onShowArticlesByAuthor(author)}
-          onKeyDown={(event) => {
-            if (event.target !== event.currentTarget) {
-              return;
-            }
-
-            if (event.key === 'Enter' || event.key === ' ') {
-              event.preventDefault();
-              onShowArticlesByAuthor(author);
-            }
-          }}
-        >
-          {mode === 'delete' && showDeleteAuthors && (
-            <input
-              type="checkbox"
-              checked={selectedAuthorIds.includes(author.id)}
-              onClick={(event) => event.stopPropagation()}
-              onChange={() => onToggleAuthorSelection(author.id)}
-            />
-          )}
-
-          <h3>
-            {author.firstName} {author.lastName}
-          </h3>
-
-          <p>{author.email}</p>
-
-          <div className="card-actions">
-            <button
-              onClick={(event) => {
-                event.stopPropagation();
-                onStartUpdateAuthor(author);
-              }}
-            >
-              Update Author
-            </button>
-          </div>
-        </article>
+        />
       ))}
     </section>
   );

@@ -5,7 +5,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "concurrently \"pnpm --filter cms-backend dev\" \"pnpm --filter cms-frontend dev\"",
+    "dev": "concurrently \"pnpm --filter cms-backend dev\" \"node scripts/wait-for-port.mjs 3000 && pnpm --filter cms-frontend dev\"",
     "dev:backend": "pnpm --filter cms-backend dev",
     "dev:frontend": "pnpm --filter cms-frontend dev",
     "typecheck": "pnpm --filter cms-backend typecheck",
