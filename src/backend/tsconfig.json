@@ -4,7 +4,7 @@
   {
     // File Layout
      "rootDir": "./",
-     "outDir": "./dist",
+     "outDir": "../../dist/backend",
      "esModuleInterop": true, //default import from commonjs, for express- import from 'express'
 
     // Environment Settings

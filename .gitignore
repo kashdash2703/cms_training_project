@@ -3,5 +3,5 @@ dist/
 .env
 .DS_Store
 coverage/
-.env
 .env.test
+.Sample.ts

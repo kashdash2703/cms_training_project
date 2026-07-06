@@ -118,10 +118,6 @@ export async function searchArticles (
 
     const searchResult = await articleService.searchArticles(q);
 
-    if (searchResult.totalSearchResults === 0) {
-      return reply.code(404).send({ message: 'No articles found' });
-    }
-
     return reply.code(200).send(searchResult);
 }
 
@@ -199,4 +195,3 @@ export async function deleteArticleById(
         message: 'Article deleted successfully',
     });
 }
-
